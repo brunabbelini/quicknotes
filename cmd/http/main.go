@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/brunabbelini/quicknotes/internal/handlers"
+	"github.com/brunabbelini/quicknotes/internal/repositories"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -25,13 +26,21 @@ func main() {
 	slog.Info("Conexão com o banco estabelecida com sucesso")
 
 	defer dbpool.Close()
-	
+
 	slog.Info(fmt.Sprintf("Servidor rodando na porta %s\n", config.ServerPort))
 	mux := http.NewServeMux()
 
 	staticHandler := http.FileServer(http.Dir("views/static/"))
 
 	mux.Handle("/static/", http.StripPrefix("/static/", staticHandler))
+
+	noteRepo := repositories.NewNoteRepository(dbpool)
+
+	err = noteRepo.Delete(3)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	fmt.Println("Nota 3 foi deletada")
 
 	noteHandler := handlers.NewNoteHandler()
 

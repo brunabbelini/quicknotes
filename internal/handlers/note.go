@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"html/template"
-	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -12,7 +12,7 @@ import (
 	"github.com/brunabbelini/quicknotes/internal/repositories"
 )
 
-type noteHandler struct{
+type noteHandler struct {
 	repo repositories.NoteRepository
 }
 
@@ -35,8 +35,11 @@ func (nh *noteHandler) NoteList(w http.ResponseWriter, r *http.Request) error {
 		http.Error(w, "Aconteceu um erro ao executar essa página", http.StatusInternalServerError)
 		return ErrInternal
 	}
-	slog.Info("Executou o handler /")
-	return t.ExecuteTemplate(w, "base", nil)
+	notes, err := nh.repo.List(r.Context())
+	if err != nil {
+		return err
+	}
+	return t.ExecuteTemplate(w, "base", newNoteResponseFromNoteList(notes))
 }
 
 func (nh *noteHandler) NoteView(w http.ResponseWriter, r *http.Request) error {
@@ -56,11 +59,17 @@ func (nh *noteHandler) NoteView(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return ErrInternal
 	}
-	note, err := nh.repo.GetById(id)
+	note, err := nh.repo.GetById(r.Context(), id)
 	if err != nil {
 		return err
 	}
-	return t.ExecuteTemplate(w, "base", note)
+	buff := &bytes.Buffer{}
+	err = t.ExecuteTemplate(buff, "base", newNoteResponseFromNote(note))
+	if err != nil {
+		return ErrInternal
+	}
+	buff.WriteTo(w)
+	return nil
 }
 
 func (nh *noteHandler) NoteCreate(w http.ResponseWriter, r *http.Request) error {

@@ -41,6 +41,7 @@ func (f HandlerWithError) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

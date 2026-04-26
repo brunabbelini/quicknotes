@@ -9,6 +9,7 @@ import (
 
 	"github.com/brunabbelini/quicknotes/internal/handlers"
 	"github.com/brunabbelini/quicknotes/internal/repositories"
+	"github.com/gorilla/csrf"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -57,7 +58,14 @@ func main() {
 
 	mux.Handle("GET /confirmation/{token}", handlers.HandlerWithError(userHandler.Confirm))
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%s", config.ServerPort), mux); err != nil {
+	csrfMiddleware := csrf.Protect(
+		[]byte("32-byte-long-auth-key"),
+		csrf.TrustedOrigins([]string{
+			"localhost:5000",
+		}),
+	)
+
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", config.ServerPort), csrfMiddleware(mux)); err != nil {
 		panic(err)
 	}
 }

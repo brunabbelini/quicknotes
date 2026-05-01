@@ -36,13 +36,12 @@ func main() {
 	// testando o envio de email
 	mailPort, _ := strconv.Atoi(config.MailPort)
 	mailService := mailer.NewSMTPMailService(mailer.SMTPConfig{
-		Host: config.MailHost,
-		Port: mailPort,
+		Host:     config.MailHost,
+		Port:     mailPort,
 		Username: config.MailUsername,
 		Password: config.MailPassword,
-		From: config.MailFrom,
+		From:     config.MailFrom,
 	})
-
 
 	sessionManager := scs.New()
 	sessionManager.Lifetime = time.Hour
@@ -50,9 +49,11 @@ func main() {
 	pgxstore.NewWithCleanupInterval(dbpool, 30*time.Second)
 
 	csrfMiddleware := csrf.Protect(
-		[]byte("32-byte-long-auth-key"),
+		[]byte(config.CSRFKey),
 		csrf.TrustedOrigins([]string{
 			"localhost:5000",
+			"127.0.0.1:5000",
+			"localhost:8443",
 		}),
 	)
 

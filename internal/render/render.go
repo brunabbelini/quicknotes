@@ -5,8 +5,10 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/brunabbelini/quicknotes/views"
 	"github.com/gorilla/csrf"
 )
 
@@ -18,11 +20,25 @@ func NewRender(session *scs.SessionManager) *RenderTemplate {
 	return &RenderTemplate{session: session}
 }
 
-func (rt *RenderTemplate) RenderPage(w http.ResponseWriter, r *http.Request, status int, page string, data any) error {
+func getTemplatePageFiles(t *template.Template, page string, useFS bool) (*template.Template, error) {
+	if useFS {
+		return t.ParseFS(views.Files, "template/base.html", "template/pages/"+page)
+	}
 	files := []string{
 		"views/template/base.html",
 	}
 	files = append(files, "views/template/pages/"+page)
+	return t.ParseFiles(files...)
+}
+
+func getTemplateMailFiles(mailTmpl string, useFS bool) (*template.Template, error) {
+	if useFS {
+		return template.ParseFS(views.Files, "template/mails/"+mailTmpl)
+	}
+	return template.ParseFiles("views/template/mails/" + mailTmpl)
+}
+
+func (rt *RenderTemplate) RenderPage(w http.ResponseWriter, r *http.Request, status int, page string, data any) error {
 	t := template.New("").Funcs(template.FuncMap{
 		"csrfField": func() template.HTML {
 			return csrf.TemplateField(r)
@@ -37,7 +53,8 @@ func (rt *RenderTemplate) RenderPage(w http.ResponseWriter, r *http.Request, sta
 			return rt.session.GetString(r.Context(), "userEmail")
 		},
 	})
-	t, err := t.ParseFiles(files...)
+	useFS := !strings.Contains(r.Host, "localhost")
+	t, err := getTemplatePageFiles(t, page, useFS)
 	if err != nil {
 		return err
 	}
@@ -51,8 +68,14 @@ func (rt *RenderTemplate) RenderPage(w http.ResponseWriter, r *http.Request, sta
 	return nil
 }
 
-func (rt *RenderTemplate) RenderMailBody(mailTempl string, data any) ([]byte, error) {
-	t, err := template.ParseFiles("views/template/mails/" + mailTempl)
+func (rt *RenderTemplate) RenderMailBody(r *http.Request, mailTempl string, data map[string]string) ([]byte, error) {
+	useFS := !strings.Contains(r.Host, "localhost")
+
+	//TODO: verificar se está usando HTTPS
+	data["hostAddr"] = "http://" + r.Host
+
+	t, err := getTemplateMailFiles(mailTempl, useFS)
+
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, err

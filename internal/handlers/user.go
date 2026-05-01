@@ -49,7 +49,7 @@ func (uh *userHandler) ForgetPassword(w http.ResponseWriter, r *http.Request) er
 		return uh.render.RenderPage(w, r, http.StatusOK, "user-forget-password.html", data)
 	}
 
-	body, err := uh.render.RenderMailBody("forgetpassword.html", token)
+	body, err := uh.render.RenderMailBody(r, "forgetpassword.html", map[string]string{"token": token})
 	if err != nil {
 		return err
 	}
@@ -231,17 +231,22 @@ func (uh *userHandler) Signup(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	body, err := uh.render.RenderMailBody("confirmation.html", token)
+	body, err := uh.render.RenderMailBody(r, "confirmation.html", map[string]string{"token": token})
 	if err != nil {
 		return err
 	}
 
-	uh.mail.Send(mailer.MailMessage{
+	err = uh.mail.Send(mailer.MailMessage{
 		To:      []string{data.Email},
 		Subject: "Confirmação de Cadastro",
 		IsHtml:  true,
 		Body:    body,
 	})
+
+	if err != nil {
+		slog.Error(err.Error())
+		return err
+	}
 
 	return uh.render.RenderPage(w, r, http.StatusOK, "user-signup-success.html", token)
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 
 	"github.com/brunabbelini/quicknotes/internal/models"
 	"github.com/brunabbelini/quicknotes/internal/validations"
@@ -24,8 +25,17 @@ type NoteRequest struct {
 }
 
 type UserRequest struct {
-	Email string
+	Email    string
 	Password string
+	validations.FormValidator
+}
+
+type UserSignupRequest struct {
+	Email          string
+	Password       string
+	CaptchaID      string
+	CaptchaContent template.URL
+	CaptchaAnswer  string
 	validations.FormValidator
 }
 

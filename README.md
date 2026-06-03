@@ -95,3 +95,21 @@ Para executar a aplicação com Docker localmente, execute o comando abaixo:
 ```bash
 docker compose -f ./docker-compose.prod.yml up -d
 ```
+
+## Demonstrações da Aplicação 
+
+| Cadastro Usuário | Email confirmação |
+|:--:|:--:|
+| <img width="1913" height="907" alt="quicknotes1" src="https://github.com/user-attachments/assets/379bd7b4-d75e-4664-92e0-db1b52cf01c8" /> | <img width="1917" height="986" alt="quicknotes3" src="https://github.com/user-attachments/assets/0866f48e-5ffa-4777-a49b-9ef4c1b9bc6b" />
+
+| Página Inicial | Nova anotação |
+|:--:|:--:|
+| <img width="1909" height="980" alt="quicknotes4" src="https://github.com/user-attachments/assets/10a7032f-8c5c-40dc-b389-bfdc1f5ebfe2" /> | <img width="1915" height="984" alt="quicknotes5" src="https://github.com/user-attachments/assets/a06be307-82be-403c-bb31-6e8ec6369d3a" />
+
+| Editar nota | Menu com nota criada |
+|:--:|:--:|
+| <img width="1914" height="980" alt="quicknotes6" src="https://github.com/user-attachments/assets/cfb467ac-0ac0-4150-9646-4c212d8ade64" /> | <img width="1918" height="981" alt="quicknotes7" src="https://github.com/user-attachments/assets/1ed1f614-9678-4e48-bbae-790c11e0d099" />
+
+
+
+
